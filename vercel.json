@@ -1,11 +1,11 @@
-{
+{{
   "rewrites": [
     {
       "source": "/admin",
       "destination": "/admin.html"
     },
     {
-      "source": "/:slug",
+      "source": "/:slug((?!.*\\.).*)",
       "destination": "/planner.html"
     }
   ]
