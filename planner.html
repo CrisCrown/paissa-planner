@@ -245,7 +245,7 @@ let h=`<h2 class="sec">Your Wedding Overview</h2>
 <div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Wedding Date</span><span>${D.dhDate||D.dt||"TBC"}</span></div>
 <div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Type</span><span>${D.hireType==="accom"?"Wedding + Accommodation":"Day Hire"}</span></div>
 <div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Guests</span><span>${D.adults} adults${D.kids?", "+D.kids+" kids":""}${D.babies?", "+D.babies+" babies":""}</span></div>
-<div class="sb" style="padding:8px 0"><span style="font-weight:600">Menu</span><span>${m?m.n:"TBC"}</span></div>
+
 </div>`;
 // Timeline on overview
 if(mo&&TL[mo]){
@@ -285,9 +285,12 @@ return h;
 function rVenue(){
 let h=`<h2 class="sec">Païssa d'en Bernat Hire</h2>
 <div class="warm"><strong>Included with every Païssa wedding:</strong><br>• Exclusive use of all event spaces 10AM–midnight<br>• Up to 10 round tables + up to 80 white Chiavari chairs<br>• The Cave — underground disco with Pioneer sound & lighting<br>• All venue furniture (sofas, cushions, loungers)<br>• Dedicated venue manager + full setup & cleaning<br>• Self-Planning Guide + Couples Tasting Week invitation<br>• Two guest toilets, maintained throughout</div>`;
-if(D.hireType==="day"){h+=`<h3 class="ms">Your Date</h3><p class="nt">Select your wedding date.</p><select onchange="D.dhDate=this.value;render()"><option value="">Select date...</option><optgroup label="2027">`;DH27.forEach(x=>{h+=`<option value="${x.d}"${D.dhDate===x.d?" selected":""}>${x.d} — €${x.p.toLocaleString()}${x.pr?" ★ Premium":""}</option>`;});h+=`</optgroup><optgroup label="2028">`;DH28.forEach(x=>{h+=`<option value="${x.d}"${D.dhDate===x.d?" selected":""}>${x.d} — €${x.p.toLocaleString()}${x.pr?" ★ Premium":""}</option>`;});h+=`</optgroup></select>`;
+if(D.hireType==="day"){h+=`<h3 class="ms">Your Date</h3>`;
+if(__isAdmin){h+=`<p class="nt">Select the wedding date.</p><select onchange="D.dhDate=this.value;render()"><option value="">Select date...</option><optgroup label="2027">`;DH27.forEach(x=>{h+=`<option value="${x.d}"${D.dhDate===x.d?" selected":""}>${x.d} — €${x.p.toLocaleString()}${x.pr?" ★ Premium":""}</option>`;});h+=`</optgroup><optgroup label="2028">`;DH28.forEach(x=>{h+=`<option value="${x.d}"${D.dhDate===x.d?" selected":""}>${x.d} — €${x.p.toLocaleString()}${x.pr?" ★ Premium":""}</option>`;});h+=`</optgroup></select>`;}
 if(D.dhDate){const dhp=getDHP();h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;margin:10px 0"><div class="sb" style="font-size:15px;font-weight:600"><span>${D.dhDate}</span><span style="color:#b8a88a">€${dhp.toLocaleString()}</span></div></div>`;}}
-if(D.hireType==="accom"){h+=`<h3 class="ms">Wedding Date Period</h3><p class="nt">Includes 3 nights exclusive villa + wedding.</p><select onchange="D.accomPeriod=this.value;render()"><option value="">Select period...</option>`;AC.forEach(([l,p,x])=>{h+=`<option value="${l}"${D.accomPeriod===l?" selected":""}>${l.trim()} — €${p.toLocaleString()} / 3 nights</option>`;});h+=`</select>`;
+if(D.hireType==="accom"){h+=`<h3 class="ms">Wedding Date Period</h3><p class="nt">Includes 3 nights exclusive villa + wedding.</p>`;
+if(__isAdmin){h+=`<select onchange="D.accomPeriod=this.value;render()"><option value="">Select period...</option>`;AC.forEach(([l,p,x])=>{h+=`<option value="${l}"${D.accomPeriod===l?" selected":""}>${l.trim()} — €${p.toLocaleString()} / 3 nights</option>`;});h+=`</select>`;}
+else if(D.accomPeriod){const a=AC.find(x=>x[0]===D.accomPeriod);h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;margin:10px 0"><div class="sb" style="font-size:15px;font-weight:600"><span>${D.accomPeriod.trim()}</span><span style="color:#b8a88a">€${a?a[1].toLocaleString():""} / 3 nights</span></div></div>`;}
 if(D.accomPeriod){const a=AC.find(x=>x[0]===D.accomPeriod);
 h+=`<h3 class="ms">Extra Nights</h3>`;
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;margin:10px 0">`;
@@ -297,7 +300,7 @@ h+=`</div>`;
 if(D.extraNightRequested&&!D.extraNightApproved){
 h+=`<div class="warn"><strong>Extra night requested</strong> — we'll check availability and confirm within 24 hours.</div>`;
 }else if(!D.extraNightApproved){
-h+=`<div style="background:#fff;border:1px dashed #d4c5a9;border-radius:10px;padding:14px;margin:10px 0;text-align:center"><div style="font-size:13px;font-weight:600;color:#5a4e3a">Want to add an extra night?</div><div style="font-size:12px;color:#8a7e6a;margin:6px 0">Extra nights are subject to availability (€${a[2]}/night).</div><a href="mailto:info@paissadenbernat.com?subject=Extra Night Request — ${D.p1} %26 ${D.p2}&body=Hi Cris,%0A%0AWe'd love to add an extra night to our stay.%0A%0AThanks!" style="display:inline-block;margin-top:8px;padding:8px 20px;background:#b8a88a;color:#fff;border-radius:20px;text-decoration:none;font-size:12px" onclick="D.extraNightRequested=true;render()">Request Extra Night</a></div>`;
+h+=`<div style="background:#fff;border:1px dashed #d4c5a9;border-radius:10px;padding:14px;margin:10px 0;text-align:center"><div style="font-size:13px;font-weight:600;color:#5a4e3a">Want to add extra nights?</div><div style="font-size:12px;color:#8a7e6a;margin:6px 0">Subject to availability. +1 night: €${a[2]} · +2 nights: €${a[2]*2}</div><div style="font-size:12px;color:#8a7e6a;margin:4px 0">To confirm, email <a href="mailto:info@paissadenbernat.com?subject=Extra Night Request — ${D.p1} %26 ${D.p2}&body=Hi Cris,%0A%0AWe would love to add extra nights to our stay.%0A%0AThanks!" style="color:#b8a88a">info@paissadenbernat.com</a></div></div>`;
 }
 h+=`<div class="nt" style="margin-top:6px">Confirmed extra nights (set by venue):</div>${ct("extraNights",0,4)}`;
 h+=`<div class="incl"><strong>Accommodation perks:</strong><br>• Complimentary overnight stay during Tasting Week<br>• 15% discount on Cave extensions</div>`;
@@ -361,19 +364,23 @@ return h;}
 
 // ===== PROPOSAL: DRINKS =====
 function rDrinks(){let h=`<h2 class="sec">Drinks & Bar</h2><div class="incl"><strong>Always included:</strong> Sommelier dinner wine service (€25pp). All glassware, bartenders, bar setup, ice & fruit.</div>`;
-h+=`<h3 class="ms">Arrival (30-45 min)</h3>`;AR.forEach(d=>{h+=cd("arr",d.i,`<div class="sb"><strong>${d.n}</strong><span style="color:#b8a88a">€${d.p}pp</span></div>`);});
+h+=`<h3 class="ms">Arrival (${D.extArr?"60 min":"30 min"})</h3>`;AR.forEach(d=>{h+=cd("arr",d.i,`<div class="sb"><strong>${d.n}</strong><span style="color:#b8a88a">€${d.p}pp</span></div>`);});
+if(D.arr&&!D.extArr){const a=AR.find(x=>x.i===D.arr);h+='<div class="tl-ext" onclick="D.extArr=!D.extArr;render()"><span>+30 min Welcome Extension (60 min total) — +€'+a.p+'pp</span></div>';}
+if(D.arr&&D.extArr){const a=AR.find(x=>x.i===D.arr);h+='<div class="tl-ext on" onclick="D.extArr=!D.extArr;render()"><span>\u2713 +30 min Welcome Extension (60 min) — +€'+a.p+'pp</span></div>';}
 h+=`<label class="lbl">Arrival drink notes</label><textarea onchange="D.confArrivalNotes=this.value" placeholder="e.g. specific cava preference, non-alcoholic options...">${D.confArrivalNotes}</textarea>`;
 h+=`<h3 class="ms">Reception (${D.extRec?"2 hours":"1.5 hours"})</h3>`;
 RE.forEach(d=>{h+=cd("rec",d.i,`<div class="sb"><strong>${d.n}</strong><span style="color:#b8a88a">€${d.p}pp${D.extRec?" (+€"+d.x+"pp ext)":""}</span></div>`);});
-if(D.rec&&!D.extRec){const r=RE.find(x=>x.i===D.rec);h+=cd("recExt",null,`<div class="sb"><span>+30 min extension (2h total)</span><span style="color:#b8a88a">+€${r.x}pp</span></div>`,true);}
+if(D.rec&&!D.extRec){const r=RE.find(x=>x.i===D.rec);h+=cd("recExt",null,`<div class="sb"><span>+30 min extension (2h total)</span><span style="color:#b8a88a">+\u20ac${r.x}pp</span></div>`,true);}
+if(D.rec&&D.extRec){const r=RE.find(x=>x.i===D.rec);h+='<div class="tl-ext on" onclick="D.extRec=false;render()"><span>\u2713 Reception extended to 2h (+\u20ac'+r.x+'pp)</span></div>';}
 h+=`<label class="lbl">Reception drink notes</label><textarea onchange="D.confReceptionNotes=this.value" placeholder="e.g. signature cocktail ideas, mocktails...">${D.confReceptionNotes}</textarea>`;
 h+=`<h3 class="ms">Dinner Wines</h3><p class="nt">€25pp included. Wine choices confirmed at your tasting.</p>`;
 h+=`<label class="lbl">Wine notes</label><textarea onchange="D.confDinnerWineNotes=this.value" placeholder="e.g. prefer red heavy, specific grape varieties...">${D.confDinnerWineNotes}</textarea>`;
-h+=`<h3 class="ms">Open Bar — The Party</h3><p class="nt">3 hours included. Starts after dinner.</p>`;BA.forEach(d=>{h+=cd("bar",d.i,`<div class="sb"><strong>${d.n}</strong><span style="color:#b8a88a">€${d.p}pp</span></div>`);});
+h+=`<h3 class="ms">Open Bar \u2014 The Party</h3><div class="incl"><strong>Classic spirits:</strong> Tanqueray, Stolichnaya, Jameson, El Jimador, Havana 7<br><strong>Premium upgrade:</strong> Hendrick\u2019s, Grey Goose, JW Black Label, Don Julio, Diplom\u00e1tico</div><p class="nt">3 hours included. Starts after dinner.</p>`;BA.forEach(d=>{h+=cd("bar",d.i,`<div class="sb"><strong>${d.n}</strong><span style="color:#b8a88a">€${d.p}pp</span></div>`);});
 if(D.bar){const b=BA.find(x=>x.i===D.bar);h+=`<label class="lbl">Extra hours? (€${b.x}pp/hr)</label>${ct("extraH",0,4)}`;h+=`<div class="warm" style="font-size:12px"><strong>Bar runs until: ${getBarEnd()}</strong>${D.cave.length>0?" — make sure your bar covers Cave hours!":""}</div>`;}
 h+=`<label class="lbl">Bar notes</label><textarea onchange="D.confBarNotes=this.value" placeholder="e.g. specific spirits, brand preferences...">${D.confBarNotes}</textarea>`;
 h+=`<h3 class="ms" style="margin-top:20px">Signature Experiences</h3>`;
 h+=cd("sunset",null,`<div class="sb"><strong>His & Her Sunset Cocktails</strong><span style="color:#b8a88a">€25pp</span></div><div style="font-size:12px;color:#8a7e6a">Two bespoke cocktails, dedicated styled bar with mixologist. 1.5 hours golden hour.</div>`,true);
+if(D.sunset){h+='<div style="padding-left:28px"><label class="lbl">His Cocktail</label><input value="'+(D.hisCocktail||'')+'" onchange="D.hisCocktail=this.value" placeholder="e.g. Old Fashioned, Negroni..."><label class="lbl">Hers Cocktail</label><input value="'+(D.hersCocktail||'')+'" onchange="D.hersCocktail=this.value" placeholder="e.g. Espresso Martini, Aperol Spritz..."></div>';}
 h+=cd("shots",null,`<strong>Ceremony Shots</strong><div style="font-size:12px;color:#8a7e6a">Ice-cold shots during "I do's". Price TBC.</div>`,true);
 return h;}
 
@@ -430,7 +437,7 @@ h+=`<div class="prep-slot"><h3 class="ms" style="margin-top:0">Partner 1 — at 
 if(D.hireType==="accom")h+=`<label class="lbl">What time can we prepare the prep room?</label><p class="nt">We need access before your day begins.</p><input value="${D.brideRoomPrepTime}" onchange="D.brideRoomPrepTime=this.value" placeholder="e.g. By 8AM — we'll be in Room 3">`;
 h+=`</div>`;
 h+=`<div class="prep-slot"><h3 class="ms" style="margin-top:0">Groom / Partner 2</h3>
-<label class="lbl">Getting ready where?</label><p class="nt">We recommend elsewhere — hotel, friend's villa, etc.</p>
+<label class="lbl">Getting ready where?</label><p class="nt">We suggest preparing at another location — a hotel, a friend's villa in San José, etc.</p>
 <input value="${D.groomLocation}" onchange="D.groomLocation=this.value" placeholder="e.g. Hotel, friend's villa">
 <label class="lbl">Who's getting ready with them?</label>
 <textarea onchange="D.groomPeople=this.value" placeholder="e.g. James, Best man, 2 groomsmen">${D.groomPeople}</textarea>
@@ -510,6 +517,8 @@ const tablesIncl=Math.min(Math.ceil(totalGuests/10),10);
 let h=`<h2 class="sec">Setup & Furniture</h2>`;
 h+=`<h3 class="ms">DINING</h3>
 <div class="incl"><strong>Included:</strong> Up to 10 round tables (8–10 per table) + up to 80 white Chiavari chairs.<br>${totalGuests} guests = <strong>${tablesIncl} round tables included</strong>.</div>`;
+h+=`<h3 class="ms">Tables Required</h3><div class="nt">Based on ${totalGuests} guests. Min 9, max 10 per table. We have 10 round tables available.</div>`;
+h+=`<div class="row"><div class="half"><label class="lbl">Round tables needed</label><input type="number" value="${D.tablesNeeded||tablesIncl}" onchange="D.tablesNeeded=Math.max(0,Math.min(10,parseInt(this.value)||0));render()" min="0" max="10" style="width:80px"></div></div>`;
 h+=`<h3 class="ms">Presidential Table</h3><p class="nt">4m rectangular, seats 8 facing one side. Top table.</p>`;
 h+=ckb("useRectTable","Add Presidential Table + Linen","€105","Table + tablecloth included");
 h+=`<h3 class="ms">Chair Options</h3><p class="nt">Swap included white Chiavari for dining.</p>`;
@@ -543,8 +552,8 @@ h+=ckb("nightPack","Night Pack-Up & Go","€150","Pack prep room items, bouquet,
 h+=ckb("parkingAtt","Parking Attendant","€100","On-site 2 hours before. Organises all parking.");
 h+=ckb("lateCoord","Late Night Coordinator","€250","10PM–midnight. Coordinates final details.");
 if(D.lateCoord)h+=`<div style="padding-left:28px"><div class="nt">Extra hours:</div>${ct("lateCoordExtra",0,4)}<div class="nt">+€100/hour = €${(D.lateCoordExtra*100).toLocaleString()}</div></div>`;
-h+=ckb("caveSecurity","Cave Security","€300","Required for all Cave extensions.");
-if(D.caveSecurity)h+=`<div style="padding-left:28px"><div class="nt">Extra hours:</div>${ct("caveSecurityExtra",0,4)}<div class="nt">+€100/hour</div></div>`;
+h+=ckb("caveSecurity","Cave Security","€300","Required for all Cave extensions. Hours match your Cave booking.");
+if(D.caveSecurity){var caveH=D.cave?D.cave.length:0;D.caveSecurityExtra=Math.max(0,caveH-1);h+=`<div style="padding-left:28px"><div class="nt">Security hours: ${1+D.caveSecurityExtra} (matches Cave booking)</div><div class="nt">Base: \u20ac300 + ${D.caveSecurityExtra} extra hours = \u20ac${300+D.caveSecurityExtra*100}</div></div>`;}
 h+=`<h3 class="ms" style="margin-top:24px">Wedding Plant & Floral Styling</h3>
 <div class="warm" style="font-size:12px">A hands-on, collaborative service. We visit the garden centre together (or via video call) and choose plants, pots, and greenery to style your ceremony, dinner, and party spaces. Think DIY with guidance.</div>`;
 h+=ckb("gardenStyle","Wedding Plant Styling","€600 flat fee","+ pots and plants at market price");
@@ -559,7 +568,7 @@ return h;}
 
 // ===== CALCULATION HELPERS =====
 function calcVenue(){const tg=D.adults+D.kids;let vh=0,eg=0;if(D.hireType==="day"&&D.dhDate){vh=getDHP();if(D.adults>80)eg=Math.min(D.adults-80,20)*120;}if(D.hireType==="accom"&&D.accomPeriod){const a=AC.find(x=>x[0]===D.accomPeriod);if(a)vh=a[1]+D.extraNights*a[2];if(D.adults>80)eg=Math.min(D.adults-80,50)*100;}let cv=0;D.cave.forEach(c=>{const x=CV.find(v=>v[0]===c);if(x)cv+=x[1];});if(D.hireType==="accom")cv=Math.round(cv*0.85);let se=0;if(D.secondEvent){se=2500;if(D.secondEventGuests>40)se+=(D.secondEventGuests-40)*50;}let li=0;if(D.uplights)li+=450;if(D.festoons)li+=1200;if(D.discoBalls)li+=850;if(D.fairyCurtains)li+=650;if(D.sound)li+=650;let fu=0;if(D.useRectTable)fu+=105;if(D.chairSwap==="lime")fu+=Math.min(tg,75)*6;if(D.chairSwap==="cross")fu+=Math.min(tg,62)*7;fu+=D.roundCloths*55;if(D.napkins)fu+=D.adults*2;fu+=D.cerBenches*30;const cp=D.cerChairType==="crossc"?11:10;if(D.cerChairType&&D.cerChairs)fu+=D.cerChairs*cp;let svc=0;if(D.tableStyling)svc+=100;if(D.ceremonyStyle)svc+=150;if(D.nightPack)svc+=150;if(D.parkingAtt)svc+=100;if(D.lateCoord)svc+=250+D.lateCoordExtra*100;if(D.caveSecurity)svc+=300+D.caveSecurityExtra*100;if(D.gardenStyle)svc+=600+D.gardenSmallPots*20+D.gardenMedPots*30+D.gardenXLPots*100;if(D.wantShopping)svc+=150;const ex=li+fu+svc;const hi=vh+eg+cv+se;return{vh,eg,cv,se,li,fu,svc,ex,hi,tot:hi+ex};}
-function calcCat(){const m=getMenuInfo();const sN=m?Math.max(4,Math.ceil(D.adults/m.r)):0;const sC=sN*5*30;const sM=sN*45;const pc=D.canapes.filter(c=>c.includes("+\u20ac4.50")).length;const mc=m?m.p*D.adults+pc*4.5*D.adults:0;const kc=D.kids*45;const bwc=D.brunchWed?Math.max(D.brunchWedPax,6)*65:0;const bac=D.brunchAfter?Math.max(D.brunchAfterPax,8)*65:0;const sc=D.snacks?D.adults*20:0;const cc=D.cake?D.adults*10:0;const mtc=D.marketTable?600:0;const aP=(AR.find(x=>x.i===D.arr)||{p:0}).p;const rD=RE.find(x=>x.i===D.rec);const rP=rD?rD.p+((D.recExt||D.extRec)?rD.x:0):0;const bD=BA.find(x=>x.i===D.bar);const bP=bD?bD.p+bD.x*D.extraH:0;const dT=(aP+rP+25+bP+(D.sunset?25:0))*D.adults;const sub=mc+kc+sC+sM+bwc+bac+sc+cc+mtc+dT;const vat=sub*0.1;return{m,sN,sC,sM,pc,mc,kc,bwc,bac,sc,cc,mtc,aP,rP,bP,dT,sub,vat,tot:sub+vat};}
+function calcCat(){const m=getMenuInfo();const sN=m?Math.max(4,Math.ceil(D.adults/m.r)):0;const sC=sN*5*30;const sM=sN*45;const pc=D.canapes.filter(c=>c.includes("+\u20ac4.50")).length;const mc=m?m.p*D.adults+pc*4.5*D.adults:0;const kc=D.kids*45;const bwc=D.brunchWed?Math.max(D.brunchWedPax,6)*65:0;const bac=D.brunchAfter?Math.max(D.brunchAfterPax,8)*65:0;const sc=D.snacks?D.adults*20:0;const cc=D.cake?D.adults*10:0;const mtc=D.marketTable?600:0;const aP=((AR.find(x=>x.i===D.arr)||{p:0}).p)*(D.extArr?2:1);const rD=RE.find(x=>x.i===D.rec);const rP=rD?rD.p+((D.recExt||D.extRec)?rD.x:0):0;const bD=BA.find(x=>x.i===D.bar);const bP=bD?bD.p+bD.x*D.extraH:0;const dT=(aP+rP+25+bP+(D.sunset?25:0))*D.adults;const sub=mc+kc+sC+sM+bwc+bac+sc+cc+mtc+dT;const vat=sub*0.1;return{m,sN,sC,sM,pc,mc,kc,bwc,bac,sc,cc,mtc,aP,rP,bP,dT,sub,vat,tot:sub+vat};}
 
 // ===== NEW COMBINED TAB FUNCTIONS =====
 
@@ -577,29 +586,29 @@ h+=`<label class="lbl">Phone</label><input value="${D.ph}" onchange="D.ph=this.v
 h+=`<label class="lbl">Full Address (for billing)</label><textarea onchange="D.address=this.value" placeholder="Full billing address">${D.address}</textarea>`;
 h+=`<label class="lbl">Passport / ID Number (Partner 1)</label><input value="${D.passport1}" onchange="D.passport1=this.value" placeholder="For contract and billing purposes">`;
 h+=`<label class="lbl">Wedding Planner (if applicable)</label><input value="${D.plannerName}" onchange="D.plannerName=this.value" placeholder="Planner name">`;
-if(D.plannerName)h+=`<label class="lbl">Planner Email</label><input value="${D.plannerEmail}" onchange="D.plannerEmail=this.value" placeholder="Planner email">`;
+h+=`<label class="lbl">Planner Email</label><input value="${D.plannerEmail}" onchange="D.plannerEmail=this.value" placeholder="Planner email">`;
 h+=`</div>`;
 h+=`<h3 class="ms">Event Details</h3><div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0">`;
 h+=`<div style="font-size:16px;font-weight:600;color:#b8a88a;margin-bottom:12px">Wedding of ${D.p1} & ${D.p2}</div>`;
-h+=`<label class="lbl">Wedding Date</label><input value="${D.dt}" onchange="D.dt=this.value;render()" placeholder="e.g. Sat 28 Aug 2027">`;
-h+=`<div class="row"><div class="half"><label class="lbl">Wedding ID</label><input value="${D.weddingID||autoID}" onchange="D.weddingID=this.value" placeholder="Auto: YYMMDD" style="font-weight:600;color:#b8a88a"></div>`;
-h+=`<div class="half"><label class="lbl">Booking Type</label><select onchange="D.hireType=this.value;render()"><option value="accom"${D.hireType==="accom"?" selected":""}>Accommodation</option><option value="day"${D.hireType==="day"?" selected":""}>Day Hire</option></select></div></div>`;
+if(__isAdmin){h+=`<label class="lbl">Wedding Date</label><input value="${D.dt}" onchange="D.dt=this.value;render()" placeholder="e.g. Sat 28 Aug 2027">`;}else{h+=`<label class="lbl">Wedding Date</label><input value="${D.dt}" readonly style="background:#f0ece4;cursor:default">`;}
+h+=`<div class="row"><div class="half"><label class="lbl">Wedding ID</label><input value="${D.weddingID||autoID}" readonly style="font-weight:600;color:#b8a88a;background:#f0ece4;cursor:default"></div>`;
+if(__isAdmin){h+=`<div class="half"><label class="lbl">Booking Type</label><select onchange="D.hireType=this.value;render()"><option value="accom"${D.hireType==="accom"?" selected":""}>Accommodation</option><option value="day"${D.hireType==="day"?" selected":""}>Day Hire</option></select></div></div>`;}else{h+=`<div class="half"><label class="lbl">Booking Type</label><input value="${D.hireType==="accom"?"Accommodation":"Day Hire"}" readonly style="background:#f0ece4;cursor:default"></div></div>`;}
 h+=`<div class="sb" style="padding:8px 0;border-top:1px solid #f0ece4;margin-top:8px"><span style="font-weight:600">Days</span><span>${D.hireType==="day"?"1 day":((3+D.extraNights)+" nights")}</span></div>`;
-h+=`<div class="sb" style="padding:8px 0;border-top:1px solid #f0ece4"><span style="font-weight:600">Menu</span><span>${m?m.n:"TBC"}</span></div>`;
+
 h+=`</div>`;
 h+=`<h3 class="ms">Guest Count</h3><div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0">`;
 h+=`<div class="nt" style="margin-bottom:8px">Set by venue at proposal stage:</div>`;
-h+=`<div class="row"><div class="half"><label class="lbl">Adults</label><input type="number" value="${D.proposalAdults}" onchange="D.proposalAdults=Math.max(1,parseInt(this.value)||0);render()" min="1" max="130" style="width:80px"></div>`;
+if(__isAdmin){h+=`<div class="row"><div class="half"><label class="lbl">Adults</label><input type="number" value="${D.proposalAdults}" onchange="D.proposalAdults=Math.max(1,parseInt(this.value)||0);render()" min="1" max="130" style="width:80px"></div>`;
 h+=`<div class="half"><label class="lbl">Children (4-12)</label><input type="number" value="${D.proposalKids}" onchange="D.proposalKids=Math.max(0,parseInt(this.value)||0);render()" min="0" max="50" style="width:60px"></div></div>`;
-h+=`<div class="row"><div class="half"><label class="lbl">Babies (0-3)</label><input type="number" value="${D.proposalBabies}" onchange="D.proposalBabies=Math.max(0,parseInt(this.value)||0);render()" min="0" max="20" style="width:60px"></div></div>`;
+h+=`<div class="row"><div class="half"><label class="lbl">Babies (0-3)</label><input type="number" value="${D.proposalBabies}" onchange="D.proposalBabies=Math.max(0,parseInt(this.value)||0);render()" min="0" max="20" style="width:60px"></div></div>`;}else{h+=`<div style="font-size:14px;padding:4px 0">${D.proposalAdults} Adults &middot; ${D.proposalKids} Children (4-12) &middot; ${D.proposalBabies} Babies (0-3)</div>`;}
 h+=`<h3 class="ms" style="margin-top:16px">Updated Guest List</h3><div class="nt" style="margin-bottom:8px">Update your numbers as RSVPs come in:</div>`;
 h+=`<div class="row"><div class="half"><label class="lbl">${D.adults} Adults</label><input type="number" value="${D.adults}" onchange="D.adults=Math.max(1,parseInt(this.value)||0);render()" min="1" max="130" style="width:80px"></div>`;
-h+=`<div class="half"><label class="lbl">${D.kids} Children</label><input type="number" value="${D.kids}" onchange="D.kids=Math.max(0,parseInt(this.value)||0);render()" min="0" max="50" style="width:60px"></div></div>`;
-h+=`<div class="row"><div class="half"><label class="lbl">${D.babies} Babies</label><input type="number" value="${D.babies}" onchange="D.babies=Math.max(0,parseInt(this.value)||0);render()" min="0" max="20" style="width:60px"></div></div>`;
+h+=`<div class="half"><label class="lbl">${D.kids} Children (4-12)</label><input type="number" value="${D.kids}" onchange="D.kids=Math.max(0,parseInt(this.value)||0);render()" min="0" max="50" style="width:60px"></div></div>`;
+h+=`<div class="row"><div class="half"><label class="lbl">${D.babies} Babies (0-3)</label><input type="number" value="${D.babies}" onchange="D.babies=Math.max(0,parseInt(this.value)||0);render()" min="0" max="20" style="width:60px"></div></div>`;
 const gc=(D.adults!==D.proposalAdults||D.kids!==D.proposalKids||D.babies!==D.proposalBabies);
 if(gc)h+=`<div class="warn" style="margin-top:8px">Guest count updated from original proposal (${D.proposalAdults} adults${D.proposalKids?", "+D.proposalKids+" children":""}${D.proposalBabies?", "+D.proposalBabies+" babies":""}).</div>`;
 h+=`</div>`;
-h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0"><div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Wedding Date</span><span>${D.dhDate||D.dt||"TBC"}</span></div><div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Guests</span><span>${D.adults} adults${D.kids?", "+D.kids+" kids":""}${D.babies?", "+D.babies+" babies":""}</span></div><div class="sb" style="padding:8px 0"><span style="font-weight:600">Menu</span><span>${m?m.n:"TBC"}</span></div></div>`;
+h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0"><div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Wedding Date</span><span>${D.dhDate||D.dt||"TBC"}</span></div><div class="sb" style="padding:8px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Guests</span><span>${D.adults} adults${D.kids?", "+D.kids+" kids":""}${D.babies?", "+D.babies+" babies":""}</span></div></div>`;
 if(mo&&TL[mo]){
 const t=TL[mo];const sun=getExactSunset()||SUNSETS[mo];
 const sH=parseInt(t.sun.split(":")[0]);const sAP=t.sun.includes("PM");
@@ -607,14 +616,14 @@ const sMin=(sAP&&sH!==12?sH+12:sH)*60+parseInt(t.sun.split(":")[1]);
 const pMin=24*60-sMin;const pH=Math.round(pMin/30)/2;const cH=D.cave.length;const totP=pH+cH;
 const isLate=(mo==="sep"||mo==="oct");
 h+=`<h2 class="sec" style="margin-top:28px">Your Timeline</h2><div class="warm">A <strong>${t.lbl}</strong> wedding at Pa\u00efssa, built around the sunset at <strong>${sun}</strong>.${isLate?"<br><br><strong>Note:</strong> For September and October weddings, we recommend the sunset moment at least 40\u201345 minutes before sunset to make the most of the golden light.":"<br><br>We recommend the sunset moment around 30 minutes before sunset \u2014 but it can start whenever you like."}</div>`;
-h+=`<div class="ck" onclick="D.sunsetVerified=!D.sunsetVerified;render()">${D.sunsetVerified?"\u2611":"\u2610"} <span style="font-size:12px"><strong>Venue verified:</strong> sunset time checked for this date</span></div>`;
-h+=`<label class="lbl">Sunset notes</label><textarea onchange="D.sunsetNotes=this.value" placeholder="Any adjustments to sunset timing...">${D.sunsetNotes}</textarea>`;
+if(__isAdmin)h+=`<div class="ck" onclick="D.sunsetVerified=!D.sunsetVerified;render()">${D.sunsetVerified?"\u2611":"\u2610"} <span style="font-size:12px"><strong>Venue verified:</strong> sunset time checked for this date</span></div>`;
+if(__isAdmin){h+=`<label class="lbl">Sunset notes from Cris</label><textarea onchange="D.sunsetNotes=this.value" placeholder="Personal note about sunset timing...">${D.sunsetNotes}</textarea>`;}else if(D.sunsetNotes){h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;margin:10px 0;font-size:13px;line-height:1.6"><div style="font-size:11px;color:#b8a88a;font-weight:600;margin-bottom:6px">A note from Cris about your sunset</div>${D.sunsetNotes}</div>`;}
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:16px 0">`;
 h+=`<div class="tl-item"><div class="tl-time">${D.extArr?addMin(t.arr,-30):t.arr}</div><div class="tl-what"><strong>Guest Arrival & Welcome</strong><div class="tl-dur">${D.extArr?"60 min":"30 min"}</div></div></div>`;
 h+=`<div class="tl-item"><div class="tl-time">${t.cer}</div><div class="tl-what"><strong>Ceremony</strong><div class="tl-dur">30 min</div></div></div>`;
 h+=`<div class="tl-item"><div class="tl-time">${t.rec}</div><div class="tl-what"><strong>Canap\u00e9s & Cocktail Reception</strong><div class="tl-dur">${D.extRec?"2 hours":"1.5 hours"}</div></div></div>`;
-h+=`<div class="tl-item"><div class="tl-time">${t.din}</div><div class="tl-what"><strong>Dinner Service</strong><div class="tl-dur">~2 hours</div></div></div>`;
-if(!D.noSpeeches)h+=`<div class="tl-item"><div class="tl-time">${t.sp}</div><div class="tl-what"><strong>Speeches & Toasts</strong><div class="tl-dur">~30 min</div></div></div>`;
+h+=`<div class="tl-item"><div class="tl-time">${D.extRec?addMin(t.din,30):t.din}</div><div class="tl-what"><strong>Dinner Service</strong><div class="tl-dur">~2 hours</div></div></div>`;
+if(!D.noSpeeches)h+=`<div class="tl-item"><div class="tl-time">${D.extRec?addMin(t.sp,30):t.sp}</div><div class="tl-what"><strong>Speeches & Toasts</strong><div class="tl-dur">~30 min</div></div></div>`;
 h+=`<div class="tl-item"><div class="tl-time">${t.sun}</div><div class="tl-what"><strong>Sunset Moment \u2600\ufe0f</strong><div class="tl-dur">Sunset at ${sun}</div></div></div>`;
 h+=`<div class="tl-item"><div class="tl-time">${t.sun}</div><div class="tl-what"><strong>Party & Open Bar</strong><div class="tl-dur">${pH} hours until midnight</div></div></div>`;
 if(cH>0)h+=`<div class="tl-item" style="border:none"><div class="tl-time">Midnight</div><div class="tl-what"><strong>The Cave \u2014 After Party</strong><div class="tl-dur">${cH} hour${cH>1?"s":""}</div></div></div>`;
@@ -630,26 +639,28 @@ h+=`<div class="tl-ext${D.noSpeeches?" on":""}" onclick="tb('noSpeeches')"><span
 h+=`<h3 class="ms" style="margin-top:24px">Your Guides</h3><div style="background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;margin:10px 0"><div style="padding:8px 0;border-bottom:1px solid #f0ece4"><a href="https://www.canva.com/design/DAG-NVkr1V4/zNxWX360wXVpgOSxagX5ZQ/view" target="_blank" style="color:#b8a88a;font-weight:600;text-decoration:none;font-size:14px">\ud83d\udcd6 Planning Guide</a></div><div style="padding:8px 0;border-bottom:1px solid #f0ece4"><a href="https://www.canva.com/design/DAHAdPVvMAY/LJZ1-pQQXQjdQ5Rek0Hpfg/view" target="_blank" style="color:#b8a88a;font-weight:600;text-decoration:none;font-size:14px">\ud83c\udfb5 Sound, Light & Entertainment Guide</a></div><div style="padding:8px 0;border-bottom:1px solid #f0ece4"><a href="https://www.canva.com/design/DAHAqme5W20/oshTj3Q3_XWQ7wDEvxmfVg/view" target="_blank" style="color:#b8a88a;font-weight:600;text-decoration:none;font-size:14px">\ud83d\udc8d Recommended Suppliers</a></div><div style="padding:8px 0;border-bottom:1px solid #f0ece4"><a href="#" style="color:#b8a88a;font-weight:600;text-decoration:none;font-size:14px">\ud83c\udf34 Local\u2019s Guide to Ibiza \u2014 Coming Soon</a><div class="nt">Restaurants, beaches, hidden gems \u2014 by Cris</div></div><div style="padding:8px 0"><a href="#" style="color:#b8a88a;font-weight:600;text-decoration:none;font-size:14px">\ud83c\udf7d\ufe0f Your Catering Lookbook \u2014 Coming Soon</a><div class="nt">A visual guide to everything Zest \u2014 table settings, canap\u00e9s, dining styles & more</div></div></div>`;
 h+=`<h3 class="ms" style="margin-top:24px">Contact Details</h3>`;
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:10px 0"><div style="font-size:14px;font-weight:600;color:#b8a88a;margin-bottom:8px">Pa\u00efssa d\u2019en Bernat</div><div style="font-size:13px;padding:3px 0">Cris \u2014 <a href="tel:+34649920522" style="color:#3a3226">+34 649 920 522</a></div><div style="font-size:13px;padding:3px 0"><a href="mailto:info@paissadenbernat.com" style="color:#b8a88a">info@paissadenbernat.com</a></div><div style="font-size:12px;color:#8a7e6a;padding:3px 0;margin-top:4px">Emergencies only: Lynda \u2014 <a href="tel:+34649920527" style="color:#8a7e6a">+34 649 920 527</a></div></div>`;
-h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:10px 0"><div style="font-size:14px;font-weight:600;color:#b8a88a;margin-bottom:8px">Zest Ibiza \u2014 Catering</div><div style="font-size:13px;padding:3px 0">Noemi \u2014 <a href="tel:+34661021700" style="color:#3a3226">+34 661 021 700</a> \u00b7 <em>for everything</em></div><div style="font-size:13px;padding:3px 0"><a href="mailto:info@zestibiza.com" style="color:#b8a88a">info@zestibiza.com</a></div><div style="font-size:12px;color:#8a7e6a;padding:6px 0;margin-top:4px;border-top:1px solid #f0ece4">Ben \u2014 Head Chef \u00b7 <em>all menu questions</em></div><div style="font-size:12px;color:#8a7e6a;padding:3px 0">Luka \u2014 Front of House Manager \u00b7 <em>all service questions</em></div></div>`;
+h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:10px 0"><div style="font-size:14px;font-weight:600;color:#b8a88a;margin-bottom:8px">Zest Ibiza \u2014 Catering</div><div style="font-size:13px;padding:3px 0">Noemi \u2014 <a href="tel:+34661021700" style="color:#3a3226">+34 661 021 700</a></div><div style="font-size:13px;padding:3px 0"><a href="mailto:info@zestibiza.com" style="color:#b8a88a">info@zestibiza.com</a></div><div style="font-size:12px;color:#8a7e6a;padding:8px 0;margin-top:6px;border-top:1px solid #f0ece4">Management Team: Ben, Noemi & Luka<br><em>Any of the team may be in touch during your planning, tasting and site visits.</em></div></div>`;
 return h;}
 
 // TAB 2: Venue & Stay (combines venue + accom + morning prep)
 function rVenueStay(){
-let h=rVenue(); // reuse existing venue function (has hire, cave, second event)
+let h='';
+h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:14px;margin:0 0 14px 0"><div class="sb" style="padding:4px 0"><span style="font-weight:600">Wedding Date</span><span>${D.dt||"TBC"}</span></div><div class="sb" style="padding:4px 0"><span style="font-weight:600">Booking</span><span>${D.hireType==="accom"?"Accommodation":"Day Hire"}</span></div>${D.hireType==="accom"?'<div class="sb" style="padding:4px 0"><span style="font-weight:600">Check-in</span><span>'+(D.checkIn||"TBC")+'</span></div><div class="sb" style="padding:4px 0"><span style="font-weight:600">Check-out</span><span>'+(D.checkOut||"TBC")+'</span></div>':""}</div>`;
+h+=rVenue(); // reuse existing venue function (has hire, cave, second event)
 // Add logistics
 h+=`<div class="section-divider">YOUR BOOKING</div>`;
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:14px;margin:14px 0">`;
 if(D.hireType==="accom"){
-h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Check-in</span><span>${D.checkIn} \u2014 from 3:00 PM</span></div>`;
+h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Check-in</span><span>${D.checkIn} \u2014 from 3:00 PM</span></div><div class="nt" style="font-size:11px">Earlier check-in may be available. We can only confirm closer to the date \u2014 if we have clients checking out before you, an early arrival won\u2019t be possible.</div>`;
 h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Check-out</span><span>${D.checkOut} \u2014 by 10:00 AM</span></div>`;
 h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Nights</span><span>${3+D.extraNights}</span></div>`;
 }else{
 h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Check-in</span><span>Wedding day \u2014 from 10:00 AM</span></div>`;
 h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Check-out</span><span>Wedding day \u2014 by midnight</span></div>`;
 }
-h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Gate Code</span><span style="font-size:16px;font-weight:600;color:#b8a88a">${D.gateCode} + ENTER</span></div>`;
+h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">Gate Code</span><span style="font-size:16px;font-weight:600;color:#b8a88a">${D.gateCode} + ENTER</span></div><div class="nt" style="font-size:11px">${D.hireType==="accom"?"Your code is DDMM (wedding date day + month)":"Your code is MMYY (wedding month + year)"}</div>`;
 h+=`<div class="sb" style="padding:6px 0"><span style="font-weight:600">Location</span><span><a href="https://maps.app.goo.gl/YourPaissaLink" target="_blank" style="color:#b8a88a">Open in Google Maps \u2197</a></span></div></div>`;
-h+=`<div style="background:#fff;border:1px dashed #d4c5a9;border-radius:10px;padding:14px;margin:10px 0;text-align:center"><div style="font-size:13px;font-weight:600;color:#5a4e3a">Planning a visit?</div><a href="#" style="display:inline-block;margin-top:8px;padding:8px 20px;background:#b8a88a;color:#fff;border-radius:20px;text-decoration:none;font-size:12px">Book a Visit \u2014 Coming Soon</a></div>`;
+h+=`<div style="background:#fff;border:1px dashed #d4c5a9;border-radius:10px;padding:14px;margin:10px 0;text-align:center"><div style="font-size:13px;font-weight:600;color:#5a4e3a">Planning a visit?</div><a href="https://paissadenbernat.com/viewings" target="_blank" style="display:inline-block;margin-top:8px;padding:8px 20px;background:#b8a88a;color:#fff;border-radius:20px;text-decoration:none;font-size:12px">Book a Visit</a></div>`;
 h+=`<div class="section-divider">PLANNING YOUR STAY</div>`;
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0">`;
 h+=`<div class="sb" style="padding:6px 0;border-bottom:1px solid #f0ece4"><span style="font-weight:600">WiFi</span><span>Alladins \u00b7 Password: <strong>alladins</strong></span></div>`;
@@ -673,7 +684,10 @@ return h;}
 
 // TAB 3: Catering (combines menu + drinks + tasting + extras)
 function rCatering(){
-let h=rMenuSelect(); // menu selection + canapes + starters + mains + dessert
+const m=getMenuInfo();const tg=D.adults+D.kids;
+let h='';
+h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:14px;margin:0 0 14px 0"><div class="sb" style="padding:4px 0"><span style="font-weight:600">Wedding Date</span><span>${D.dt||"TBC"}</span></div><div class="sb" style="padding:4px 0"><span style="font-weight:600">Menu</span><span>${m?m.n:"TBC"}</span></div><div class="sb" style="padding:4px 0"><span style="font-weight:600">Adults + Children</span><span>${D.adults} + ${D.kids} = ${tg}</span></div></div>`;
+h+=rMenuSelect(); // menu selection + canapes + starters + mains + dessert
 h+=`<div class="warm" style="font-size:12px;margin-top:16px">You can update all selections and add notes at the time of your tasting.</div>`;
 h+=`<div class="section-divider">DRINKS & BAR</div>`;
 h+=rDrinks(); // drinks
@@ -760,6 +774,7 @@ D.venuePayments.forEach((p,i)=>{h+=`<div class="pay-row"><input type="number" va
 h+=`<div style="margin-top:6px"><span style="font-size:12px;color:#b8a88a;cursor:pointer;text-decoration:underline" onclick="D.venuePayments.push({amount:'',date:'',note:''});render()">+ Add payment</span></div>`;
 const vP=D.venuePayments.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
 h+=`<div style="margin-top:10px;padding:10px;background:#f5f0e8;border-radius:8px;font-size:13px"><div class="sb"><span>Total Paid</span><span>\u20ac${vP.toLocaleString()}</span></div><div class="sb" style="margin-top:4px;font-weight:600"><span>Balance Due</span><span>\u20ac${(vTD-vP).toLocaleString()}</span></div></div>`;
+
 // Refundable deposit
 
 h+=`<div style="background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0"><div style="font-size:14px;font-weight:600;color:#b8a88a;margin-bottom:10px">Venue Bank Details</div><div style="font-size:12px;line-height:1.8;color:#5a4e3a"><strong>Bank:</strong> Banco Santander, Figueretas, Ibiza 07800<br><strong>IBAN:</strong> ES60 0049 4577 9022 9000 4811<br><strong>SWIFT/BIC:</strong> BSCHESMMXXX<br><strong>Currency:</strong> EUR<br><strong>Reference:</strong> Please use your Wedding ID (<strong>${D.weddingID||"YYMMDD"}</strong>)<br><br><em>The client is liable for any currency conversion, bank fees or transfer charges.</em></div><div class="warm" style="font-size:11px;margin-top:10px">Payments can sometimes be taken in GBP \u2014 enquire with Cris if this would be helpful. This can save on conversion fees.</div></div>`;
@@ -806,6 +821,7 @@ const cP=D.cateringPayments.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
 h+=`<div style="margin-top:10px;padding:10px;background:#f5f0e8;border-radius:8px;font-size:13px"><div class="sb"><span>Total Paid</span><span>\u20ac${cP.toLocaleString()}</span></div><div class="sb" style="margin-top:4px;font-weight:600"><span>Balance Due</span><span>\u20ac${(Math.round(cTD)-cP).toLocaleString()}</span></div></div>`;
 // GRAND TOTAL
 h+=`<div style="background:#5a4e3a;color:#fff;border-radius:12px;padding:20px;margin:24px 0"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="text-align:center;flex:1"><div style="font-size:11px;color:#d4c5a9">Venue</div><div style="font-size:20px;font-weight:600;margin:4px 0">\u20ac${vTD.toLocaleString()}</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Paid to Pa\u00efssa</div></div><div style="text-align:center;flex:1"><div style="font-size:11px;color:#d4c5a9">Catering</div><div style="font-size:20px;font-weight:600;margin:4px 0">\u20ac${Math.round(cTD).toLocaleString()}</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Paid to Zest</div></div></div><div style="text-align:center;border-top:1px solid rgba(255,255,255,.15);padding-top:12px"><div style="font-size:12px;color:#d4c5a9">Estimated Total</div><div style="font-size:28px;font-weight:600;margin:4px 0">\u20ac${Math.round(vTD+cTD).toLocaleString()}</div></div><div style="font-size:10px;color:rgba(255,255,255,.4);text-align:center;margin-top:6px">Garden plants at market price not included \u00b7 \u20ac5,000 refundable deposit not included</div></div>`;
+
 return h;}
 
 // ===== CHECKLIST (reuse original) =====
@@ -820,7 +836,7 @@ const cz=[["cl_menu","Final menu selections confirmed"],["cl_drinks","Final drin
 cz.forEach(([k,l])=>{h+=`<div class="ck" onclick="D.${k}=!D.${k};render()">${D[k]?"☑":"☐"} <span style="font-size:13px">${l}</span></div>`;});
 
 h+=`<h3 class="ms">Submit to Païssa (Venue)</h3>`;
-const cv=[["cl_guestCount","Final guest count confirmed"],["cl_rooms","Room allocation confirmed"],["cl_tableplan","Table plan submitted"],["cl_floorplan","Floor plan / layout drawing submitted"],["cl_timeline","Timeline confirmed"],["cl_ceremony","Ceremony details (officiant, format, readings)"],["cl_license","Marriage license / paperwork sorted"],["cl_speeches","Speech order confirmed"],["cl_suppliers","Full supplier list with arrival times"],["cl_transport","Guest transport booked & pick-up points confirmed"],["cl_music","Music playlist / DJ brief submitted"],["cl_florist","Florist brief submitted"],["cl_furniture","Setup & furniture selections confirmed"],["cl_services","Venue services confirmed (styling, coordination, security)"],["cl_payments","Final venue payment made"]];
+const cv=[["cl_guestCount","Final guest count confirmed"],["cl_refund","Bank details for damage deposit refund submitted"],["cl_rooms","Room allocation confirmed"],["cl_tableplan","Table plan submitted"],["cl_floorplan","Floor plan / layout drawing submitted"],["cl_timeline","Timeline confirmed"],["cl_ceremony","Ceremony details (officiant, format, readings)"],["cl_license","Marriage license / paperwork sorted"],["cl_speeches","Speech order confirmed"],["cl_suppliers","Full supplier list with arrival times"],["cl_transport","Guest transport booked & pick-up points confirmed"],["cl_music","Music playlist / DJ brief submitted"],["cl_florist","Florist brief submitted"],["cl_furniture","Setup & furniture selections confirmed"],["cl_services","Venue services confirmed (styling, coordination, security)"],["cl_payments","Final venue payment made"]];
 cv.forEach(([k,l])=>{h+=`<div class="ck" onclick="D.${k}=!D.${k};render()">${D[k]?"☑":"☐"} <span style="font-size:13px">${l}</span></div>`;});
 
 const allC=[...cz,...cv];const done=allC.filter(([k])=>D[k]).length;
