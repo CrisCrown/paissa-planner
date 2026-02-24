@@ -3,6 +3,11 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/:slug",
+      "destination": "/planner.html"
     }
-  ]
+  ],
+  "cleanUrls": true
 }
