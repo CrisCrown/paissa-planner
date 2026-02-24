@@ -1,13 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/admin",
-      "destination": "/admin.html"
-    },
-    {
-      "source": "/:slug",
-      "destination": "/planner.html"
-    }
-  ],
-  "cleanUrls": true
+  "routes": [
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.+)\\.html", "dest": "/$1.html" },
+    { "src": "/([^/]+)", "dest": "/planner.html" }
+  ]
 }
