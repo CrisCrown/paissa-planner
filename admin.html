@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Païssa — Admin Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,'Times New Roman',serif;color:#3a3226;background:#faf8f5}
+header{background:linear-gradient(135deg,#5a4e3a,#3a3226);padding:20px;text-align:center}
+header h1{color:#d4c5a9;font-size:20px}
+header p{color:#8a7e6a;font-size:12px;margin-top:4px}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.login{max-width:360px;margin:80px auto;text-align:center}
+.login input{width:200px;text-align:center;font-size:18px;padding:12px;border:2px solid #e8dfc8;border-radius:10px;font-family:Georgia,serif;color:#3a3226;letter-spacing:4px}
+.btn{display:inline-block;margin:12px 4px;padding:10px 24px;background:#b8a88a;color:#fff;border:none;border-radius:25px;font-size:13px;font-family:Georgia,serif;cursor:pointer}
+.btn:hover{background:#a89878}
+.btn-sm{padding:6px 14px;font-size:11px;border-radius:15px}
+.btn-outline{background:transparent;border:1px solid #b8a88a;color:#b8a88a}
+.btn-danger{background:#c0392b}
+
+/* Dashboard table */
+.dash{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.dash th{text-align:left;padding:8px 6px;color:#8a7e6a;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #e8dfc8}
+.dash td{padding:8px 6px;border-bottom:1px solid #f0ece4;vertical-align:top}
+.dash tr:hover{background:#f5f0e8}
+.dash .couple{font-weight:600;color:#b8a88a;cursor:pointer;text-decoration:none}
+.dash .couple:hover{text-decoration:underline}
+.tbc{color:#ccc;font-style:italic}
+.paid{color:#27ae60}
+.unpaid{color:#c0392b}
+
+/* Cards */
+.card{background:#fff;border:1px solid #e8dfc8;border-radius:12px;padding:16px;margin:14px 0}
+.card h3{font-size:15px;color:#b8a88a;margin-bottom:10px}
+label{display:block;font-size:12px;color:#8a7e6a;margin:8px 0 4px;font-weight:600}
+input,select,textarea{width:100%;padding:10px;border:1px solid #e8dfc8;border-radius:8px;font-size:14px;font-family:Georgia,serif;color:#3a3226;background:#faf8f5}
+.row{display:flex;gap:12px}.half{flex:1}
+.stats{display:flex;gap:12px;margin:16px 0}
+.stat{flex:1;background:#fff;border:1px solid #e8dfc8;border-radius:10px;padding:14px;text-align:center}
+.stat .n{font-size:28px;font-weight:600;color:#b8a88a}
+.stat .l{font-size:11px;color:#8a7e6a;margin-top:4px}
+.must-know{background:#fff3cd;border-left:3px solid #f0c040;padding:8px 12px;margin:4px 0;border-radius:0 6px 6px 0;font-size:12px}
+.note{background:#f5f0e8;padding:8px 12px;margin:4px 0;border-radius:6px;font-size:12px}
+.note .author{font-weight:600;color:#b8a88a}
+.note .date{color:#8a7e6a;font-size:10px}
+.hidden{display:none}
+.err{color:#c0392b;font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>Païssa d'en Bernat — Admin</h1>
+<p id="headerSub"></p>
+</header>
+<div class="wrap" id="app"></div>
+
+<script>
+let TOKEN = '';
+let weddings = [];
+let currentView = 'login'; // login, dashboard, create, detail
+
+// ===== LOGIN =====
+function showLogin() {
+  currentView = 'login';
+  document.getElementById('headerSub').textContent = '';
+  document.getElementById('app').innerHTML = `
+    <div class="login">
+      <div style="font-size:48px;margin-bottom:20px">🔐</div>
+      <h2 style="margin-bottom:20px">Admin Login</h2>
+      <input id="pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <br><button class="btn" onclick="doLogin()">Login</button>
+      <div id="loginErr" class="err hidden"></div>
+    </div>`;
+  setTimeout(() => document.getElementById('pw')?.focus(), 100);
+}
+
+async function doLogin() {
+  const pw = document.getElementById('pw').value;
+  if (!pw) return;
+  TOKEN = pw;
+  try {
+    const res = await fetch('/api/admin/weddings', { headers: { 'x-admin-token': TOKEN } });
+    if (!res.ok) throw new Error('Wrong password');
+    weddings = await res.json();
+    showDashboard();
+  } catch(e) {
+    document.getElementById('loginErr').textContent = 'Wrong password';
+    document.getElementById('loginErr').classList.remove('hidden');
+  }
+}
+
+// ===== DASHBOARD =====
+function showDashboard() {
+  currentView = 'dashboard';
+  document.getElementById('headerSub').textContent = weddings.length + ' weddings';
+  
+  const active = weddings.filter(w => w.status === 'active');
+  const totalGuests = active.reduce((s, w) => s + w.guests.adults, 0);
+  
+  let h = `<div class="stats">
+    <div class="stat"><div class="n">${active.length}</div><div class="l">Active Weddings</div></div>
+    <div class="stat"><div class="n">${totalGuests}</div><div class="l">Total Guests</div></div>
+  </div>`;
+  
+  h += `<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0">
+    <h2 style="font-size:18px">All Weddings</h2>
+    <button class="btn" onclick="showCreate()">+ New Wedding</button>
+  </div>`;
+  
+  if (weddings.length === 0) {
+    h += `<div class="card" style="text-align:center;color:#8a7e6a;padding:40px">
+      <p>No weddings yet. Create your first one!</p>
+    </div>`;
+  } else {
+    h += `<div style="overflow-x:auto"><table class="dash">
+      <tr><th>Couple</th><th>Date</th><th>Guests</th><th>Menu</th><th>Venue Paid</th><th>Cat. Paid</th><th>Last Edit</th></tr>`;
+    
+    weddings.forEach(w => {
+      const vPaid = w.venuePaid ? `€${w.venuePaid.toLocaleString()}` : '—';
+      const cPaid = w.cateringPaid ? `€${w.cateringPaid.toLocaleString()}` : '—';
+      const lastEdit = w.lastEditedBy === 'couple' ? '👫' : w.lastEditedBy === 'zest' ? '🍽️' : '🏠';
+      const timeAgo = getTimeAgo(w.updatedAt);
+      
+      h += `<tr onclick="showDetail('${w.slug}')" style="cursor:pointer">
+        <td><span class="couple">${w.couple}</span><br><span style="font-size:10px;color:#8a7e6a">${w.slug}</span></td>
+        <td>${w.date || '<span class="tbc">TBC</span>'}</td>
+        <td>${w.guests.adults}${w.guests.kids ? '+' + w.guests.kids + 'k' : ''}</td>
+        <td>${w.menu || '<span class="tbc">TBC</span>'}</td>
+        <td>${vPaid}</td>
+        <td>${cPaid}</td>
+        <td><span style="font-size:11px">${lastEdit} ${timeAgo}</span></td>
+      </tr>`;
+    });
+    h += `</table></div>`;
+  }
+  
+  document.getElementById('app').innerHTML = h;
+}
+
+// ===== CREATE WEDDING =====
+function showCreate() {
+  currentView = 'create';
+  document.getElementById('headerSub').textContent = 'New Wedding';
+  
+  document.getElementById('app').innerHTML = `
+    <div style="margin:8px 0"><button class="btn btn-outline btn-sm" onclick="showDashboard()">← Back</button></div>
+    <div class="card">
+      <h3>Create New Wedding</h3>
+      <div class="row">
+        <div class="half"><label>Partner 1</label><input id="np1" placeholder="First name"></div>
+        <div class="half"><label>Partner 2</label><input id="np2" placeholder="First name"></div>
+      </div>
+      <label>Wedding Date</label><input id="ndt" placeholder="e.g. Sat 28 Aug 2027">
+      <div class="row">
+        <div class="half"><label>URL Slug</label><input id="nslug" placeholder="e.g. sarah-james"></div>
+        <div class="half"><label>PIN (4-6 digits)</label><input id="npin" placeholder="e.g. 2827" maxlength="6"></div>
+      </div>
+      <div class="row">
+        <div class="half"><label>Adults</label><input id="nad" type="number" value="80"></div>
+        <div class="half"><label>Children</label><input id="nkd" type="number" value="0"></div>
+      </div>
+      <div class="row">
+        <div class="half"><label>Booking Type</label><select id="nht"><option value="accom">Accommodation</option><option value="day">Day Hire</option></select></div>
+        <div class="half"><label>Babies</label><input id="nbb" type="number" value="0"></div>
+      </div>
+      <br>
+      <button class="btn" onclick="doCreate()">Create Wedding</button>
+      <div id="createErr" class="err hidden"></div>
+    </div>`;
+  
+  // Auto-generate slug from names
+  document.getElementById('np1').addEventListener('input', autoSlug);
+  document.getElementById('np2').addEventListener('input', autoSlug);
+}
+
+function autoSlug() {
+  const p1 = document.getElementById('np1').value.trim().toLowerCase();
+  const p2 = document.getElementById('np2').value.trim().toLowerCase();
+  if (p1 && p2) {
+    document.getElementById('nslug').value = (p1 + '-' + p2).replace(/[^a-z0-9-]/g, '');
+  }
+}
+
+async function doCreate() {
+  const p1 = document.getElementById('np1').value.trim();
+  const p2 = document.getElementById('np2').value.trim();
+  const dt = document.getElementById('ndt').value.trim();
+  const slug = document.getElementById('nslug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const pin = document.getElementById('npin').value.trim();
+  const adults = parseInt(document.getElementById('nad').value) || 0;
+  const kids = parseInt(document.getElementById('nkd').value) || 0;
+  const babies = parseInt(document.getElementById('nbb').value) || 0;
+  const hireType = document.getElementById('nht').value;
+  
+  if (!p1 || !p2 || !slug || !pin) {
+    document.getElementById('createErr').textContent = 'Please fill in all required fields';
+    document.getElementById('createErr').classList.remove('hidden');
+    return;
+  }
+  
+  const data = {
+    p1, p2, dt, em: '', ph: '', address: '', plannerName: '', plannerEmail: '', passport1: '',
+    weddingID: '', hireType, dhDate: '', accomPeriod: '',
+    adults, kids, babies, proposalAdults: adults, proposalKids: kids, proposalBabies: babies,
+    extraNights: 0, extraNightRequested: false, extraNightApproved: false,
+    menu: '', canapes: [], starters: [], mainS: [], mainF: [], mainV: [], sides: [], dessert: '',
+    paellas: [], salads: [],
+    arr: '', rec: '', bar: '', extraH: 0, sunset: false, recExt: false, extRec: false,
+    cave: [], extArr: false, noSpeeches: false,
+    secondEvent: false, secondEventGuests: 40, secondEventFood: '', secondEventDrinks: '',
+    sunsetVerified: false, sunsetNotes: '', breakfastOption: '', shoppingStore: '',
+    wantShopping: false, shoppingList: '',
+    brunchWed: false, brunchWedPax: 6, brunchAfter: false, brunchAfterPax: 8,
+    snacks: false, cake: false, marketTable: false,
+    room1: '', room2: '', room3: '', room4: '', room5: '',
+    bridePeople: '', brideContact1: '', brideContact2: '', brideRoomPrepTime: '',
+    groomLocation: '', groomPeople: '', groomContact1: '', groomContact2: '', morningNeeds: '',
+    uplights: false, festoons: false, discoBalls: false, fairyCurtains: false, sound: false,
+    useRectTable: false, chairSwap: '', roundCloths: 0, napkins: false, highChairs: 0,
+    cerBenches: 0, cerChairType: '', cerChairs: 0,
+    tableStyling: false, ceremonyStyle: false, nightPack: false, parkingAtt: false,
+    lateCoord: false, lateCoordExtra: 0, caveSecurity: false, caveSecurityExtra: 0,
+    gardenStyle: false, gardenSmallPots: 0, gardenMedPots: 0, gardenXLPots: 0,
+    venueNotesAdmin: '',
+    venueDiscountPct: 10, venueDiscountOverride: false, venueDiscountCustom: 0,
+    cateringDiscountPct: 0, cateringDiscountOverride: false, cateringDiscountCustom: 0,
+    venuePayments: [], cateringPayments: [],
+    gateCode: '1234', checkIn: '', checkOut: '',
+    tastingType: '', tastingDate: '', tastingName1: '', tastingName2: '', tastingAllergies: '',
+    confCanapes: [], confStarters: [], confMainS: [], confMainF: [], confMainV: [], confSides: [],
+    confDessert: '', confPaellas: [], confSalads: [],
+    chefNotesCanapes: '', chefNotesStarters: '', chefNotesMain: '', chefNotesDessert: '',
+    catererNotes: '', venueNotes: '', colorTheme: '', styleNotes: '',
+    refundName: '', refundIBAN: '', refundBIC: '', refundBank: '', refundCurrency: ''
+  };
+  
+  try {
+    const res = await fetch('/api/admin/weddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ slug, pin, data })
+    });
+    
+    if (res.status === 409) {
+      document.getElementById('createErr').textContent = 'This URL is already taken. Try a different slug.';
+      document.getElementById('createErr').classList.remove('hidden');
+      return;
+    }
+    
+    if (!res.ok) throw new Error('Failed to create');
+    
+    // Refresh and go to dashboard
+    const listRes = await fetch('/api/admin/weddings', { headers: { 'x-admin-token': TOKEN } });
+    weddings = await listRes.json();
+    showDashboard();
+  } catch(e) {
+    document.getElementById('createErr').textContent = 'Error: ' + e.message;
+    document.getElementById('createErr').classList.remove('hidden');
+  }
+}
+
+// ===== WEDDING DETAIL =====
+async function showDetail(slug) {
+  currentView = 'detail';
+  document.getElementById('app').innerHTML = '<p style="text-align:center;padding:40px;color:#8a7e6a">Loading...</p>';
+  
+  try {
+    const res = await fetch('/api/admin/weddings/' + slug, { headers: { 'x-admin-token': TOKEN } });
+    const wedding = await res.json();
+    const d = wedding.data || {};
+    
+    document.getElementById('headerSub').textContent = d.p1 + ' & ' + d.p2;
+    
+    let h = `<div style="margin:8px 0">
+      <button class="btn btn-outline btn-sm" onclick="showDashboard()">← Back</button>
+      <a href="/${slug}" target="_blank" class="btn btn-sm" style="text-decoration:none;color:#fff">Open Planner ↗</a>
+    </div>`;
+    
+    // Quick info
+    h += `<div class="card">
+      <h3>Wedding Details</h3>
+      <div style="font-size:14px;line-height:2">
+        <strong>Couple:</strong> ${d.p1} & ${d.p2}<br>
+        <strong>Date:</strong> ${d.dt || d.dhDate || 'TBC'}<br>
+        <strong>ID:</strong> ${d.weddingID || '—'}<br>
+        <strong>Guests:</strong> ${d.adults} adults, ${d.kids} kids, ${d.babies} babies<br>
+        <strong>Type:</strong> ${d.hireType === 'accom' ? 'Accommodation' : 'Day Hire'}<br>
+        <strong>Menu:</strong> ${d.menu || 'TBC'}<br>
+        <strong>PIN:</strong> ${wedding.pin}<br>
+        <strong>Link:</strong> <a href="/${slug}" target="_blank">planner.paissadenbernat.com/${slug}</a>
+      </div>
+    </div>`;
+    
+    // Must-know items
+    const mk = wedding.must_know || [];
+    h += `<div class="card">
+      <h3>📌 Must Know</h3>`;
+    if (mk.length === 0) h += `<p style="color:#8a7e6a;font-size:12px">No must-know items yet.</p>`;
+    mk.forEach((item, i) => {
+      h += `<div class="must-know"><strong>${item.author}:</strong> ${item.text}
+        <span onclick="deleteMK('${slug}',${i})" style="cursor:pointer;float:right;color:#c0392b;font-size:10px">✕</span></div>`;
+    });
+    h += `<div style="margin-top:8px;display:flex;gap:8px">
+      <input id="mkInput" placeholder="Add critical info..." style="flex:1;font-size:12px">
+      <button class="btn btn-sm" onclick="addMK('${slug}')">Pin</button>
+    </div></div>`;
+    
+    // CRM Notes
+    const notes = wedding.crm_notes || [];
+    h += `<div class="card">
+      <h3>📝 Notes</h3>`;
+    if (notes.length === 0) h += `<p style="color:#8a7e6a;font-size:12px">No notes yet.</p>`;
+    notes.forEach(n => {
+      h += `<div class="note"><span class="author">${n.author}</span> <span class="date">${n.date}</span><br>${n.text}</div>`;
+    });
+    h += `<div style="margin-top:8px;display:flex;gap:8px">
+      <input id="noteInput" placeholder="Add a note..." style="flex:1;font-size:12px">
+      <button class="btn btn-sm" onclick="addNote('${slug}')">Add</button>
+    </div></div>`;
+    
+    // Payments summary
+    const vp = d.venuePayments || [];
+    const cp = d.cateringPayments || [];
+    const vTotal = vp.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+    const cTotal = cp.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+    
+    h += `<div class="card">
+      <h3>💰 Payments</h3>
+      <div style="font-size:14px;line-height:2">
+        <strong>Venue paid:</strong> €${vTotal.toLocaleString()}<br>
+        <strong>Catering paid:</strong> €${cTotal.toLocaleString()}
+      </div>
+    </div>`;
+    
+    // Danger zone
+    h += `<div class="card" style="border-color:#f5c6cb">
+      <h3 style="color:#c0392b">Danger Zone</h3>
+      <button class="btn btn-danger btn-sm" onclick="if(confirm('Delete ${d.p1} & ${d.p2}\\'s wedding? This cannot be undone.'))deleteWedding('${slug}')">Delete Wedding</button>
+    </div>`;
+    
+    document.getElementById('app').innerHTML = h;
+  } catch(e) {
+    document.getElementById('app').innerHTML = `<p class="err">Error loading wedding: ${e.message}</p>`;
+  }
+}
+
+// ===== CRM ACTIONS =====
+async function addMK(slug) {
+  const text = document.getElementById('mkInput').value.trim();
+  if (!text) return;
+  await fetch('/api/crm/' + slug, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+    body: JSON.stringify({ type: 'must_know', text })
+  });
+  showDetail(slug);
+}
+
+async function deleteMK(slug, index) {
+  await fetch('/api/crm/' + slug, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+    body: JSON.stringify({ type: 'must_know', index })
+  });
+  showDetail(slug);
+}
+
+async function addNote(slug) {
+  const text = document.getElementById('noteInput').value.trim();
+  if (!text) return;
+  await fetch('/api/crm/' + slug, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+    body: JSON.stringify({ type: 'note', text })
+  });
+  showDetail(slug);
+}
+
+async function deleteWedding(slug) {
+  await fetch('/api/admin/weddings/' + slug, {
+    method: 'DELETE',
+    headers: { 'x-admin-token': TOKEN }
+  });
+  const listRes = await fetch('/api/admin/weddings', { headers: { 'x-admin-token': TOKEN } });
+  weddings = await listRes.json();
+  showDashboard();
+}
+
+// ===== HELPERS =====
+function getTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return mins + 'm';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h';
+  const days = Math.floor(hrs / 24);
+  return days + 'd';
+}
+
+// Start
+showLogin();
+</script>
+</body>
+</html>
